@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Untuk Fleta — Dari Yang Mencintaimu</title>
+  <style>
+    :root{
+      --bg:#0f1724; /* dark navy */
+      --pink:#ff5c93;
+      --soft:#ffd6e8;
+      --glass: rgba(255,255,255,0.06);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;color:white;background:linear-gradient(180deg,#071021 0%, var(--bg) 60%);overflow:hidden}
+
+    /* Layout */
+    .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px}
+    .card{width:980px;max-width:95%;background:linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));border-radius:18px;padding:28px;box-shadow:0 10px 40px rgba(2,6,23,0.6);position:relative;overflow:hidden}
+
+    /* Big heart */
+    .stage{display:flex;gap:28px;align-items:center}
+    .left{flex:1;min-width:280px}
+    .right{flex:1;min-width:280px}
+
+    .title{font-size:28px;margin:0 0 8px 0;letter-spacing:0.6px}
+    .subtitle{color:#b8d7ff80;margin:0 0 18px 0}
+
+    .big-heart{
+      width:220px;height:220px;border-radius:50%;background:radial-gradient(circle at 30% 30%, #fff1f7 0%, var(--pink) 30%, #e73b7c 70%);position:relative;display:flex;align-items:center;justify-content:center;transform:scale(1);animation:beat 1s infinite;box-shadow:0 15px 40px rgba(231,59,124,0.28), inset 0 -6px 30px rgba(255,255,255,0.06)
+    }
+    .big-heart:before, .big-heart:after{content:"";position:absolute;width:140px;height:140px;border-radius:50%;background:inherit}
+    .big-heart:before{top:-60px;left:18px}
+    .big-heart:after{right:-60px;top:18px}
+    .big-heart .label{position:relative;font-weight:700;color:#39001f;text-shadow:0 1px 0 rgba(255,255,255,0.25)}
+
+    @keyframes beat{
+      0%{transform:scale(0.98)}
+      40%{transform:scale(1.06)}
+      100%{transform:scale(0.98)}
+    }
+
+    /* Floating hearts background */
+    .heart-float{position:absolute;inset:0;pointer-events:none}
+    .heart{position:absolute;width:28px;height:28px;transform:translateY(0) rotate(-20deg);opacity:0.95}
+    .heart svg{width:100%;height:100%;filter:drop-shadow(0 6px 12px rgba(231,59,124,0.18))}
+
+    /* Typing message */
+    .msg{background:var(--glass);padding:16px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);min-height:120px}
+    .msg .line{font-size:18px;line-height:1.4}
+    .typing{display:inline-block;border-right:2px solid rgba(255,255,255,0.6);padding-right:6px;margin-left:6px;animation:blink 1s steps(2) infinite}
+    @keyframes blink{50%{border-color:transparent}}
+
+    /* Buttons */
+    .controls{margin-top:16px;display:flex;gap:10px}
+    .btn{background:linear-gradient(180deg,var(--pink),#e02e6b);padding:10px 14px;border-radius:10px;border:none;color:white;font-weight:600;cursor:pointer;box-shadow:0 6px 18px rgba(224,46,107,0.22)}
+    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);box-shadow:none;color:#d6e7ff}
+
+    /* Confetti canvas overlay */
+    #confetti{position:absolute;inset:0;pointer-events:none}
+
+    /* Footer small */
+    .foot{margin-top:12px;color:#bcd9ff66;font-size:13px}
+
+    /* Responsive */
+    @media (max-width:720px){.stage{flex-direction:column}.big-heart{width:160px;height:160px}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card" id="card">
+
+      <div class="heart-float" id="heartFloat" aria-hidden="true"></div>
+      <canvas id="confetti"></canvas>
+
+      <div class="stage">
+        <div class="left">
+          <h1 class="title">Untuk Fleta ❤️</h1>
+          <p class="subtitle">Sebuah halaman kecil penuh cinta — dibuat khusus untukmu.</p>
+
+          <div class="msg" id="messageBox" role="article" aria-label="Surat cinta">
+            <p class="line" id="line1"></p>
+            <p class="line" id="line2"></p>
+            <p class="line" id="line3"></p>
+            <p class="line" id="line4"></p>
+            <p class="line" id="line5"></p>
+          </div>
+
+          <div class="controls">
+            <button class="btn" id="replayBtn">Putar Ulang Animasi</button>
+            <button class="btn ghost" id="toggleMusic">Bunyi: Mati</button>
+          </div>
+          <p class="foot">Tekan "Putar Ulang" untuk membuat confetti dan hati bergerak lagi. Sesuaikan teks kalau mau.</p>
+        </div>
+
+        <div class="right" style="display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px">
+          <div class="big-heart" id="bigHeart">
+            <div class="label">FLETA</div>
+          </div>
+
+          <div style="text-align:center;color:#cfe6ff99">Kamu adalah alasan aku tersenyum setiap hari.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <audio id="bgm" loop>
+    <!-- no external file to keep single-file; optional base64 music could be added by user -->
+  </audio>
+
+  <script>
+    /* --------- Message typing --------- */
+    const lines = [
+      'Halo Fleta, selamat datang di halaman kecil ini — dibuat khusus hanya untukmu.',
+      'Setiap detik bersamamu terasa berharga. Senyummu adalah hari terbaikku.',
+      'Aku ingin selalu ada untukmu, di saat susah maupun bahagia.',
+      'Terima kasih sudah menjadi dirimu yang hangat, sabar, dan penuh cinta.',
+      'Love youu. \n- Dari yang mencintaimu'
+    ];
+
+    const ids = ['line1','line2','line3','line4','line5'];
+
+    async function typeLines(){
+      for(let i=0;i<lines.length;i++){
+        const el = document.getElementById(ids[i]);
+        el.textContent = '';
+        await typeText(el, lines[i], 20 + Math.random()*20);
+      }
+    }
+
+    function typeText(el, text, speed=40){
+      return new Promise(resolve=>{
+        let i=0;
+        const typing = setInterval(()=>{
+          el.textContent = text.slice(0,i+1);
+          i++;
+          if(i>=text.length){
+            clearInterval(typing);
+            setTimeout(resolve,400);
+          }
+        }, speed);
+      });
+    }
+
+    /* --------- Floating hearts generator --------- */
+    const heartFloat = document.getElementById('heartFloat');
+    function spawnHearts(count=12){
+      heartFloat.innerHTML='';
+      for(let i=0;i<count;i++){
+        const div = document.createElement('div');
+        div.className='heart';
+        const size = 18 + Math.random()*36;
+        div.style.width = size+'px';
+        div.style.height = size+'px';
+        const left = Math.random()*100;
+        div.style.left = left+'%';
+        div.style.top = (20 + Math.random()*60)+'%';
+        div.style.opacity = 0.5 + Math.random()*0.6;
+        div.style.transform = `translateY(${Math.random()*40}px) rotate(${(Math.random()*40)-20}deg)`;
+        div.innerHTML = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="url(#g)" d="M12 21s-7-4.35-9-7.5C-0.2 9.8 3 5 7 6.5 9 7.5 10 10 12 11.5 14 10 15 7.5 17 6.5c4-1.5 7.2 3.3 4 7.0C19 16.65 12 21 12 21z"/></svg>`;
+        // tiny animation
+        const dur = 8000 + Math.random()*8000;
+        div.animate([
+          { transform: `translateY(0px) rotate(${(Math.random()*40)-20}deg)`, opacity: 0.9 },
+          { transform: `translateY(-${100+Math.random()*200}px) rotate(${(Math.random()*360)-180}deg)`, opacity: 0.0 }
+        ],{duration:dur, iterations:1, easing:'ease-out'});
+        heartFloat.appendChild(div);
+      }
+    }
+
+    /* --------- Simple confetti (canvas) --------- */
+    const conf = document.getElementById('confetti');
+    let confettiCtx, W, H, confettiPieces=[];
+    function resizeConf(){
+      W = conf.width = conf.clientWidth;
+      H = conf.height = conf.clientHeight;
+      confettiCtx = conf.getContext('2d');
+    }
+    window.addEventListener('resize', ()=>{resizeConf();});
+
+    function createConfetti(n=120){
+      confettiPieces = [];
+      for(let i=0;i<n;i++){
+        confettiPieces.push({
+          x: Math.random()*W,
+          y: Math.random()*H - H,
+          r: 6+Math.random()*10,
+          d: Math.random()*n,
+          tilt: Math.random()*10-10,
+          color: `hsl(${Math.floor(Math.random()*360)} ${70+Math.random()*20}% ${60+Math.random()*10}%)`
+        });
+      }
+    }
+
+    let confettiRunning = false;
+    function renderConfetti(){
+      if(!confettiRunning) return;
+      confettiCtx.clearRect(0,0,W,H);
+      for(let i=0;i<confettiPieces.length;i++){
+        const p = confettiPieces[i];
+        p.y += Math.cos(p.d) + 3 + p.r/2;
+        p.x += Math.sin(0.5) * 2;
+        p.tilt += Math.random()*0.1;
+        confettiCtx.save();
+        confettiCtx.fillStyle = p.color;
+        confettiCtx.beginPath();
+        confettiCtx.translate(p.x, p.y);
+        confettiCtx.rotate(p.tilt * Math.PI/180);
+        confettiCtx.fillRect(-p.r/2, -p.r/2, p.r, p.r*0.6);
+        confettiCtx.restore();
+      }
+      confettiPieces = confettiPieces.filter(p=>p.y < H+50);
+      if(confettiPieces.length===0){ confettiRunning=false; return; }
+      requestAnimationFrame(renderConfetti);
+    }
+
+    function launchCelebration(){
+      spawnHearts(18);
+      resizeConf();
+      createConfetti(160);
+      confettiRunning = true;
+      renderConfetti();
+
+      const heart = document.getElementById('bigHeart');
+      heart.animate([{transform:'scale(1)'},{transform:'scale(1.14)'},{transform:'scale(1)'}],{duration:900,iterations:4,easing:'ease-in-out'});
+    }
+
+    /* --------- Controls --------- */
+    document.getElementById('replayBtn').addEventListener('click', ()=>{launchCelebration();typeLines();});
+    const bgm = document.getElementById('bgm');
+
+    const toggleMusic = document.getElementById('toggleMusic');
+    let musicOn = false;
+    toggleMusic.addEventListener('click', ()=>{
+      musicOn = !musicOn;
+      toggleMusic.textContent = musicOn? 'Bunyi: Nyala':'Bunyi: Mati';
+      if(musicOn){
+        bgm.play().catch(()=>{});
+      } else { bgm.pause(); bgm.currentTime=0; }
+    });
+
+    /* --------- Init --------- */
+    window.addEventListener('load', ()=>{
+      // start typing then celebration
+      typeLines().then(()=>{ setTimeout(launchCelebration, 400); });
+
+      // make canvas size correct
+      resizeConf();
+
+      // small decorative hearts that slowly float up continuously
+      setInterval(()=>{spawnHearts(10)}, 5000);
+    });
+
+    // Accessibility: allow keyboard replay (R)
+    window.addEventListener('keydown', (e)=>{ if(e.key.toLowerCase()==='r'){ launchCelebration(); typeLines(); }});
+
+    /* Optional: make text editable by clicking a line */
+    document.querySelectorAll('.msg .line').forEach(p=>{
+      p.addEventListener('click', ()=>{
+        const val = prompt('Ubah baris ini:', p.textContent);
+        if(val!==null) p.textContent = val;
+      });
+    });
+
+  </script>
+</body>
+</html>
